@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pediatric Dose Calculator</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F5F5B">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dose Calc">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg: #F4F7F5;
+    --card: #FFFFFF;
+    --ink: #1E2422;
+    --muted: #5B6B67;
+    --teal: #1F5F5B;
+    --teal-soft: #E3EEEC;
+    --line: #DDE6E3;
+    --warn: #B5551A;
+    --warn-soft: #FBEBE1;
+    --tylenol: #2E6E8E;
+    --motrin: #1F5F5B;
+    --benadryl: #7A5C9E;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 0 48px;
+  }
+
+  .wrap{ max-width: 560px; margin: 0 auto; padding: 28px 20px 0; }
+
+  header{ margin-bottom: 20px; }
+  h1{
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  header p{
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  .disclaimer{
+    background: var(--warn-soft);
+    border: 1px solid #EBC9AE;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #7A3B10;
+    margin: 18px 0 24px;
+  }
+  .disclaimer strong{ color: #5C2C0C; }
+
+  .inputs{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .field{ flex: 1; }
+  .field label{
+    display:block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input{
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 9px;
+    color: var(--ink);
+    background: #FBFCFB;
+  }
+  .field input:focus{
+    outline: none;
+    border-color: var(--teal);
+    background: #fff;
+  }
+  .field .unit{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .prompt{
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 30px 10px;
+    border: 1.5px dashed var(--line);
+    border-radius: 14px;
+  }
+
+  .drug-card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--accent, var(--teal));
+  }
+  .drug-card.tylenol{ --accent: var(--tylenol); }
+  .drug-card.motrin{ --accent: var(--motrin); }
+  .drug-card.benadryl{ --accent: var(--benadryl); }
+
+  .drug-name{
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent, var(--teal));
+    margin-bottom: 2px;
+  }
+  .drug-generic{
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .dose-display{
+    font-family: 'Newsreader', serif;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: 2px;
+  }
+  .dose-sub{
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .meta-row{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 13px;
+    color: var(--ink);
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    margin-top: 8px;
+  }
+  .meta-row div{ line-height: 1.5; }
+  .meta-row b{ font-weight: 600; }
+
+  .note{
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .blocked{
+    display:flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--warn-soft);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #7A3B10;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  footer{
+    margin-top: 22px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Pediatric Dose Calculator</h1>
+    <p>Weight-based OTC dosing estimates for acetaminophen, ibuprofen, and diphenhydramine.</p>
+  </header>
+
+  <div class="disclaimer">
+    <strong>Not a substitute for medical advice.</strong> These are general estimates. Always confirm against your child's doctor, pharmacist, or the product label — concentrations vary by brand. If unsure, call your pediatrician or Poison Control at <strong>1-800-222-1222</strong>.
+  </div>
+
+  <div class="inputs">
+    <div class="field">
+      <label for="weight">Weight</label>
+      <input type="number" id="weight" inputmode="decimal" placeholder="e.g. 32" min="0" step="0.1">
+      <div class="unit">pounds (lb)</div>
+    </div>
+    <div class="field">
+      <label for="age">Age</label>
+      <input type="number" id="age" inputmode="decimal" placeholder="e.g. 18" min="0" step="1">
+      <div class="unit">months</div>
+    </div>
+  </div>
+
+  <div id="results">
+    <div class="prompt">Enter weight and age above to see dosing estimates.</div>
+  </div>
+
+  <footer>
+    Doses shown are typical OTC ranges rounded to practical syringe/spoon measures. This tool does not account for kidney/liver conditions, other medications, or product-specific concentrations — always read the label on the bottle you have.
+  </footer>
+</div>
+
+<script>
+const weightInput = document.getElementById('weight');
+const ageInput = document.getElementById('age');
+const results = document.getElementById('results');
+
+function round(value, step){
+  return Math.round(value / step) * step;
+}
+
+function fmt(n){
+  return (Math.round(n * 10) / 10).toString();
+}
+
+function render(){
+  const lb = parseFloat(weightInput.value);
+  const ageMo = parseFloat(ageInput.value);
+
+  if (!lb || lb <= 0 || isNaN(ageMo) || ageMo < 0) {
+    results.innerHTML = '<div class="prompt">Enter weight and age above to see dosing estimates.</div>';
+    return;
+  }
+
+  const kg = lb / 2.20462;
+  let html = '';
+
+  // ---------- Acetaminophen (Tylenol) ----------
+  if (ageMo < 2) {
+    html += blockedCard('tylenol', 'Acetaminophen', 'Tylenol',
+      'Not recommended for infants under 2 months without a doctor\'s guidance. Dosing at this age should be physician-directed.');
+  } else {
+    let lowMg = kg * 10, highMg = kg * 15;
+    let capped = false;
+    if (highMg > 650) { highMg = 650; capped = true; }
+    if (lowMg > highMg) lowMg = highMg;
+    const conc = 160/5; // mg per mL
+    const lowMl = round(lowMg / conc, 0.25);
+    const highMl = round(highMg / conc, 0.25);
+    html += doseCard({
+      cls: 'tylenol', name: 'Acetaminophen', brand: 'Tylenol',
+      mgLow: lowMg, mgHigh: highMg,
+      mlLow: lowMl, mlHigh: highMl,
+      concText: 'based on Children\'s Tylenol 160 mg/5 mL',
+      freq: 'Every 4–6 hours as needed',
+      maxDaily: 'No more than 5 doses in 24 hours',
+      note: capped ? 'Calculated dose exceeded the typical single-dose cap and was limited to 650 mg — confirm with a doctor for larger children.' : null
+    });
+  }
+
+  // ---------- Ibuprofen (Motrin) ----------
+  if (ageMo < 6) {
+    html += blockedCard('motrin', 'Ibuprofen', 'Motrin / Advil',
+      'Not recommended for infants under 6 months without a doctor\'s guidance.');
+  } else {
+    let lowMg = kg * 5, highMg = kg * 10;
+    let capped = false;
+    if (highMg > 400) { highMg = 400; capped = true; }
+    if (lowMg > highMg) lowMg = highMg;
+    const conc = 100/5;
+    const lowMl = round(lowMg / conc, 0.25);
+    const highMl = round(highMg / conc, 0.25);
+    html += doseCard({
+      cls: 'motrin', name: 'Ibuprofen', brand: 'Motrin / Advil',
+      mgLow: lowMg, mgHigh: highMg,
+      mlLow: lowMl, mlHigh: highMl,
+      concText: 'based on Children\'s Motrin/Advil 100 mg/5 mL',
+      freq: 'Every 6–8 hours as needed',
+      maxDaily: 'No more than 4 doses in 24 hours',
+      note: capped ? 'Calculated dose exceeded the typical single-dose cap and was limited to 400 mg — confirm with a doctor for larger children.' : null
+    });
+  }
+
+  // ---------- Diphenhydramine (Benadryl) ----------
+  if (ageMo < 24) {
+    html += blockedCard('benadryl', 'Diphenhydramine', 'Benadryl',
+      'Not recommended for children under 2 years without a doctor\'s guidance.');
+  } else {
+    let doseMg = kg * 1;
+    let capped = false;
+    if (doseMg > 50) { doseMg = 50; capped = true; }
+    const conc = 12.5/5;
+    const ml = round(doseMg / conc, 0.25);
+    html += doseCard({
+      cls: 'benadryl', name: 'Diphenhydramine', brand: 'Benadryl',
+      mgLow: doseMg, mgHigh: doseMg,
+      mlLow: ml, mlHigh: ml,
+      concText: 'based on Children\'s Benadryl liquid 12.5 mg/5 mL',
+      freq: 'Every 6 hours as needed',
+      maxDaily: 'No more than 4 doses in 24 hours',
+      note: capped ? 'Calculated dose exceeded the typical single-dose cap and was limited to 50 mg.' : null
+    });
+  }
+
+  results.innerHTML = html;
+}
+
+function doseCard(d){
+  const mgText = d.mgLow === d.mgHigh
+    ? fmt(d.mgLow) + ' mg'
+    : fmt(d.mgLow) + '–' + fmt(d.mgHigh) + ' mg';
+  const mlText = d.mlLow === d.mlHigh
+    ? fmt(d.mlLow) + ' mL'
+    : fmt(d.mlLow) + '–' + fmt(d.mlHigh) + ' mL';
+
+  return `
+  <div class="drug-card ${d.cls}">
+    <div class="drug-name">${d.brand}</div>
+    <div class="drug-generic">${d.name}</div>
+    <div class="dose-display">${mgText}</div>
+    <div class="dose-sub">${mlText} of liquid — ${d.concText}</div>
+    <div class="meta-row">
+      <div><b>Frequency</b><br>${d.freq}</div>
+      <div><b>Max</b><br>${d.maxDaily}</div>
+    </div>
+    ${d.note ? `<div class="note">${d.note}</div>` : ''}
+  </div>`;
+}
+
+function blockedCard(cls, name, brand, message){
+  return `
+  <div class="drug-card ${cls}">
+    <div class="drug-name">${brand}</div>
+    <div class="drug-generic">${name}</div>
+    <div class="blocked">${message}</div>
+  </div>`;
+}
+
+weightInput.addEventListener('input', render);
+ageInput.addEventListener('input', render);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
